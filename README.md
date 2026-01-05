@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="brands/zai-logo.png" alt="Z.AI Logo" width="200"/>
+  <img src="brand/zai-logo.png" alt="Z.AI Logo" width="200"/>
 </p>
 
 # @brainwav/zai-cli
