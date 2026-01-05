@@ -1,5 +1,5 @@
 {
-  "name": "zai-cli",
+  "name": "@brainwav/zai-cli",
   "version": "0.1.0",
   "description": "Z.AI capabilities CLI for agents and automation",
   "type": "module",

@@ -1,17 +1,17 @@
-# zai-cli
+# @brainwav/zai-cli
 
 Z.AI capabilities CLI for agents and automation. Access vision analysis, web search, web reading, GitHub repo exploration, and raw MCP tools.
 
 ## Installation
 
 ```bash
-npm install -g zai-cli
+npm install -g @brainwav/zai-cli
 ```
 
 Or use directly with npx:
 
 ```bash
-npx zai-cli <command>
+npx @brainwav/zai-cli <command>
 ```
 
 ## Quick Start
