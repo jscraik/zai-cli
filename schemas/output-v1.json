@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://z.ai/schemas/zai-cli-output.v1.json",
+  "title": "Z.AI CLI Output Schema",
+  "description": "Standard JSON output schema for zai-cli commands",
+  "type": "object",
+  "required": ["schema", "meta", "status", "data", "errors"],
+  "properties": {
+    "schema": {
+      "type": "string",
+      "description": "Schema version identifier for command output",
+      "enum": [
+        "zai-cli.vision.v1",
+        "zai-cli.search.v1",
+        "zai-cli.read.v1",
+        "zai-cli.repo.v1",
+        "zai-cli.tools.v1",
+        "zai-cli.call.v1",
+        "zai-cli.code.v1",
+        "zai-cli.doctor.v1"
+      ]
+    },
+    "meta": {
+      "type": "object",
+      "description": "Metadata about the CLI invocation",
+      "properties": {
+        "tool": {
+          "type": "string",
+          "const": "zai-cli",
+          "description": "CLI tool name"
+        },
+        "version": {
+          "type": "string",
+          "description": "CLI version"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp"
+        },
+        "command": {
+          "type": "string",
+          "description": "Command that was executed"
+        },
+        "requestId": {
+          "type": "string",
+          "description": "Optional request ID for tracing"
+        }
+      }
+    },
+    "status": {
+      "type": "string",
+      "description": "Overall status of the command",
+      "enum": ["success", "warn", "error"]
+    },
+    "data": {
+      "description": "Command-specific data output",
+      "type": "object"
+    },
+    "errors": {
+      "type": "array",
+      "description": "List of errors (empty if successful)",
+      "items": {
+        "type": "object",
+        "required": ["code", "message"],
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Stable error code",
+            "enum": [
+              "E_USAGE",
+              "E_VALIDATION",
+              "E_POLICY",
+              "E_PARTIAL",
+              "E_AUTH",
+              "E_NETWORK",
+              "E_INTERNAL"
+            ]
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable error message"
+          },
+          "details": {
+            "type": "object",
+            "description": "Additional error details"
+          },
+          "hint": {
+            "type": "string",
+            "description": "Suggested fix or next step"
+          }
+        }
+      }
+    }
+  }
+}

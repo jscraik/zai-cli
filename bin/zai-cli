@@ -1,0 +1,6 @@
+#!/usr/bin/env node
+/**
+ * zai-cli executable shim
+ */
+
+import '../dist/cli.js';
