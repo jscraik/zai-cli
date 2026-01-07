@@ -4,9 +4,9 @@
 
 import { Command } from 'commander';
 import { loadConfig } from '../lib/config.js';
-import { output, getSchemaForCommand } from '../lib/output.js';
-import { callWebSearch } from '../lib/mcp-client.js';
-import type { OutputOptions, ErrorCode } from '../types/index.js';
+import { callWebSearch } from '../lib/mcp-curl-client.js';
+import { getSchemaForCommand, output } from '../lib/output.js';
+import type { ErrorCode, OutputOptions } from '../types/index.js';
 
 export function search(): Command {
   return new Command('search')
@@ -42,7 +42,7 @@ export function search(): Command {
           count: parseInt(options.count, 10),
           language: options.language,
           timeRange: options.timeRange,
-        });
+        }, config.apiBaseUrl);
 
         output(result, 'search', getSchemaForCommand('search'), outputOptions);
       } catch (err) {

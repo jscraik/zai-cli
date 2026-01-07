@@ -4,9 +4,76 @@
 
 import { Command } from 'commander';
 import { loadConfig, validateConfig } from '../lib/config.js';
-import { output, getSchemaForCommand } from '../lib/output.js';
 import { connectToServer } from '../lib/mcp-client.js';
-import type { OutputOptions, DoctorCheck, DoctorResult, McpServerType } from '../types/index.js';
+import { getSchemaForCommand, output } from '../lib/output.js';
+import type { DoctorCheck, DoctorResult, McpServerType, OutputOptions } from '../types/index.js';
+
+/**
+ * Perform an API reachability/auth check against the web search MCP endpoint.
+ * Exported for unit testing.
+ */
+export async function checkApiAccess(apiKey: string): Promise<{ healthy: boolean; check: DoctorCheck }> {
+  try {
+    const response = await fetch('https://api.z.ai/api/mcp/web_search_prime/mcp', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json, text/event-stream',
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 1,
+        method: 'tools/list',
+        params: {},
+      }),
+    });
+
+    if (response.ok) {
+      return {
+        healthy: true,
+        check: {
+          name: 'api_access',
+          status: 'pass',
+          message: 'Z.AI MCP API is reachable and authenticated',
+        },
+      };
+    }
+
+    const errorData = await response.json().catch(() => ({
+      error: { message: response.statusText, code: response.status },
+    })) as { error?: { message?: string; code?: string } };
+
+    if (response.status === 401 || response.status === 403) {
+      return {
+        healthy: false,
+        check: {
+          name: 'api_access',
+          status: 'fail',
+          message: 'API authentication failed. Check your API key.',
+        },
+      };
+    }
+
+    return {
+      healthy: false,
+      check: {
+        name: 'api_access',
+        status: 'fail',
+        message: `API request failed: ${response.status} ${errorData.error?.message || response.statusText}`,
+      },
+    };
+  } catch (err) {
+    return {
+      healthy: true, // warn does not flip global healthy
+      check: {
+        name: 'api_access',
+        status: 'warn',
+        message: `API check failed: ${err instanceof Error ? err.message : String(err)}`,
+      },
+    };
+  }
+}
 
 export function doctor(): Command {
   return new Command('doctor')
@@ -81,62 +148,13 @@ export function doctor(): Command {
         }
       }
 
-      // Check HTTP-based tools
+      // Check HTTP-based MCP tools (GLM Coding Plan)
       if (config.apiKey) {
-        try {
-          // Try the main Z.AI API to verify API key and connectivity
-          const response = await fetch('https://api.z.ai/api/paas/v4/web_search', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${config.apiKey}`,
-            },
-            body: JSON.stringify({
-              search_engine: 'search-prime',
-              search_query: 'test',
-              count: 1,
-            }),
-          });
-
-          if (response.ok) {
-            checks.push({
-              name: 'api_access',
-              status: 'pass',
-              message: 'Z.AI API is reachable and authenticated',
-            });
-          } else {
-            const errorData = await response.json().catch(() => ({ error: { message: response.statusText, code: response.status } })) as { error?: { message?: string; code?: string } };
-            // Check if it's an authentication error or balance error
-            if (response.status === 401) {
-              healthy = false;
-              checks.push({
-                name: 'api_access',
-                status: 'fail',
-                message: 'API authentication failed. Check your API key.',
-              });
-            } else if (errorData.error?.code === '1113' || response.status === 429) {
-              // Balance error is still a successful auth check
-              checks.push({
-                name: 'api_access',
-                status: 'pass',
-                message: 'API is reachable (note: insufficient balance for actual queries)',
-              });
-            } else {
-              healthy = false;
-              checks.push({
-                name: 'api_access',
-                status: 'fail',
-                message: `API request failed: ${response.status} ${errorData.error?.message || response.statusText}`,
-              });
-            }
-          }
-        } catch (err) {
-          checks.push({
-            name: 'api_access',
-            status: 'warn',
-            message: `API check failed: ${err instanceof Error ? err.message : String(err)}`,
-          });
+        const apiResult = await checkApiAccess(config.apiKey);
+        if (!apiResult.healthy) {
+          healthy = false;
         }
+        checks.push(apiResult.check);
       }
 
       const result: DoctorResult = {

@@ -2,42 +2,18 @@
  * Package entry point for zai-cli
  */
 
-export { loadConfig, validateConfig, getVersion } from './lib/config.js';
-export { output, error, shouldUseColor, getSchemaForCommand } from './lib/output.js';
-export { get, set, clear, invalidate, toolDiscoveryKey } from './lib/cache.js';
+export { clear, get, invalidate, set, toolDiscoveryKey } from './lib/cache.js';
+export { getVersion, loadConfig, validateConfig } from './lib/config.js';
 export {
-  connectToServer,
-  McpClientWrapper,
-  callHttpTool,
-  callWebSearch,
-  callWebReader,
-  callZRead,
-  withRetry,
+  McpClientWrapper, callWebReader, callWebSearch, callZRead, connectToServer, withRetry
 } from './lib/mcp-client.js';
+export { error, getSchemaForCommand, output, shouldUseColor } from './lib/output.js';
 
 export type {
-  ErrorCode,
-  ExitCode,
-  SchemaVersion,
-  OutputStatus,
-  OutputError,
-  OutputMeta,
-  JsonOutput,
-  Config,
-  CacheConfig,
-  RetryConfig,
-  OutputOptions,
-  CommandContext,
-  McpServerType,
+  CacheConfig, CacheEntry, CallInput, CommandContext, Config, DoctorCheck, DoctorResult, ErrorCode,
+  ExitCode, JsonOutput, McpServerType,
   McpTool,
-  McpToolResult,
-  CacheEntry,
-  VisionInput,
-  SearchInput,
-  ReadInput,
-  RepoTreeInput,
-  RepoSearchInput,
-  CallInput,
-  DoctorResult,
-  DoctorCheck,
+  McpToolResult, OutputError,
+  OutputMeta, OutputOptions, OutputStatus, ReadInput, RepoSearchInput, RepoTreeInput, RetryConfig, SchemaVersion, SearchInput, VisionInput
 } from './types/index.js';
+

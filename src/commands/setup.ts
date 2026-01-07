@@ -3,12 +3,12 @@
  */
 
 import { Command } from 'commander';
-import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
-import { join, dirname } from 'path';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
 import { homedir } from 'os';
+import { dirname, join } from 'path';
 import { loadConfig } from '../lib/config.js';
-import { output, getSchemaForCommand } from '../lib/output.js';
-import type { OutputOptions, ErrorCode } from '../types/index.js';
+import { getSchemaForCommand, output } from '../lib/output.js';
+import type { ErrorCode, OutputOptions } from '../types/index.js';
 
 interface ClaudeSettings {
   env?: Record<string, string>;
@@ -127,6 +127,42 @@ export function setup(): Command {
         'API_TIMEOUT_MS': '3000000',
       };
 
+      // Add MCP servers for GLM Coding Plan
+      // These provide web search, web reader, and zread capabilities
+      settings.mcpServers = {
+        ...settings.mcpServers,
+        'zai-vision': {
+          type: 'stdio',
+          command: 'npx',
+          args: ['-y', '@z_ai/mcp-server'],
+          env: {
+            'Z_AI_API_KEY': config.apiKey,
+            'Z_AI_MODE': 'ZAI',
+          },
+        },
+        'zai-web-search': {
+          type: 'http',
+          url: 'https://api.z.ai/api/mcp/web_search_prime/mcp',
+          headers: {
+            'Authorization': `Bearer ${config.apiKey}`,
+          },
+        },
+        'zai-web-reader': {
+          type: 'http',
+          url: 'https://api.z.ai/api/mcp/web_reader/mcp',
+          headers: {
+            'Authorization': `Bearer ${config.apiKey}`,
+          },
+        },
+        'zai-zread': {
+          type: 'http',
+          url: 'https://api.z.ai/api/mcp/zread/mcp',
+          headers: {
+            'Authorization': `Bearer ${config.apiKey}`,
+          },
+        },
+      };
+
       // Write settings
       writeClaudeSettings(settings);
 
@@ -137,11 +173,18 @@ export function setup(): Command {
           baseUrl: 'https://api.z.ai/api/anthropic',
           authToken: '*** configured ***',
           timeout: '3000000',
+          mcpServers: [
+            'zai-vision (local stdio)',
+            'zai-web-search (HTTP)',
+            'zai-web-reader (HTTP)',
+            'zai-zread (HTTP)',
+          ],
         },
         nextSteps: [
           '1. Restart Claude Code: exit and run "claude" again',
           '2. Check status: run /status in Claude Code to verify connection',
-          '3. Start using Z.AI models for all requests',
+          '3. MCP servers will be available for vision, web search, web reader, and zread',
+          '4. Start using Z.AI models and tools for all requests',
         ],
       };
 
@@ -149,11 +192,13 @@ export function setup(): Command {
 
       if (!options.quiet) {
         console.error('\n✅ Z.AI is now configured for Claude Code!\n');
-        console.error('Claude Code will now use Z.AI models (GLM-4.7, GLM-4.5-air) for all requests.');
-        console.error('\nTo verify:');
+        console.error('Claude Code will now use Z.AI GLM Coding Plan models (GLM-4.7, GLM-4.5-air) for all requests.');
+        console.error('MCP servers configured for: Vision, Web Search, Web Reader, and ZRead\n');
+        console.error('To verify:');
         console.error('  1. Restart Claude Code (run "claude" again)');
         console.error('  2. Run: /status (should show Z.AI models)');
-        console.error('\nNext time you use Claude Code, it will automatically use Z.AI!\n');
+        console.error('  3. Try using vision, web search, or other MCP tools in Claude Code\n');
+        console.error('Next time you use Claude Code, it will automatically use Z.AI!\n');
       }
     });
 }

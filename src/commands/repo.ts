@@ -5,9 +5,9 @@
 
 import { Command } from 'commander';
 import { loadConfig } from '../lib/config.js';
-import { output, getSchemaForCommand } from '../lib/output.js';
-import { callZRead } from '../lib/mcp-client.js';
-import type { OutputOptions, ErrorCode } from '../types/index.js';
+import { callZRead } from '../lib/mcp-curl-client.js';
+import { getSchemaForCommand, output } from '../lib/output.js';
+import type { ErrorCode, OutputOptions } from '../types/index.js';
 
 function parseOwnerRepo(input: string): { owner: string; repo: string } | null {
   const parts = input.split('/');

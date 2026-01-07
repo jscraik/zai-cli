@@ -40,6 +40,7 @@ export type SchemaVersion =
   | 'zai-cli.tools.v1'
   | 'zai-cli.call.v1'
   | 'zai-cli.code.v1'
+  | 'zai-cli.model.v1'
   | 'zai-cli.doctor.v1';
 
 /**
@@ -84,6 +85,7 @@ export interface JsonOutput<T = unknown> {
  */
 export interface Config {
   apiKey?: string;
+  apiBaseUrl: string;
   mode: string;
   timeout: number;
   cache: CacheConfig;

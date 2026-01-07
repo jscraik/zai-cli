@@ -3,11 +3,12 @@
  */
 
 import { Command } from 'commander';
-import { createReadStream, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { loadConfig } from '../lib/config.js';
-import { output, getSchemaForCommand } from '../lib/output.js';
-import { connectToServer, callWebSearch, callWebReader, callZRead } from '../lib/mcp-client.js';
-import type { OutputOptions, McpServerType, ErrorCode } from '../types/index.js';
+import { connectToServer } from '../lib/mcp-client.js';
+import { callWebReader, callWebSearch, callZRead } from '../lib/mcp-curl-client.js';
+import { getSchemaForCommand, output } from '../lib/output.js';
+import type { ErrorCode, McpServerType, OutputOptions } from '../types/index.js';
 
 export function call(): Command {
   return new Command('call')
@@ -109,9 +110,9 @@ export function call(): Command {
 
         // Route to appropriate handler
         if (toolName === 'zai.search.webSearchPrime') {
-          result = await callWebSearch(config.apiKey, (args as any)?.search_query || '', args as any);
+          result = await callWebSearch(config.apiKey, (args as any)?.search_query || '', args as any, config.apiBaseUrl);
         } else if (toolName === 'zai.read.webReader') {
-          result = await callWebReader(config.apiKey, (args as any)?.url || '', args as any);
+          result = await callWebReader(config.apiKey, (args as any)?.url || '', args as any, config.apiBaseUrl);
         } else if (toolName.startsWith('zai.zread.')) {
           const method = toolName.replace('zai.zread.', '') as 'search_doc' | 'get_repo_structure';
           result = await callZRead(config.apiKey, method, args as Record<string, unknown>);

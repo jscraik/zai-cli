@@ -224,6 +224,7 @@ export function getSchemaForCommand(command: string): SchemaVersion {
     call: 'zai-cli.call.v1',
     code: 'zai-cli.code.v1',
     doctor: 'zai-cli.doctor.v1',
+    model: 'zai-cli.model.v1',
   };
 
   return schemaMap[command] || 'zai-cli.tools.v1';

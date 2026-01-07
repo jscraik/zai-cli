@@ -18,6 +18,8 @@ import { code } from './commands/code.js';
 import { doctor } from './commands/doctor.js';
 import { vision } from './commands/vision.js';
 import { setup as setupCmd } from './commands/setup.js';
+import { model } from './commands/model.js';
+import { mcpServerCommand } from './commands/mcp-server.js';
 
 /**
  * Main Commander.js program instance
@@ -57,8 +59,8 @@ async function setup() {
 
   // Configure the program
   program
-    .name('zai-cli')
-    .description('Z.AI capabilities CLI for agents and automation')
+    .name('zsearch')
+    .description('Z.AI capabilities CLI and MCP server for agents and automation')
     .version(getVersion())
     .option('--json', 'Output wrapped JSON with schema')
     .option('--plain', 'Stable line-based text output')
@@ -69,6 +71,7 @@ async function setup() {
     .option('--timeout <ms>', 'Request timeout in milliseconds', '30000');
 
   // Add commands
+  program.addCommand(mcpServerCommand());
   program.addCommand(vision());
   program.addCommand(search());
   program.addCommand(read());
@@ -78,6 +81,7 @@ async function setup() {
   program.addCommand(call());
   program.addCommand(code());
   program.addCommand(doctor());
+  program.addCommand(model());
   program.addCommand(setupCmd());
 
   // Parse arguments

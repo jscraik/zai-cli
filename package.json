@@ -1,10 +1,11 @@
 {
-  "name": "@brainwav/zai-cli",
+  "name": "@brainwav/zsearch",
   "version": "0.1.0",
-  "description": "Z.AI capabilities CLI for agents and automation",
+  "description": "Z.AI capabilities CLI and MCP server for agents and automation",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
+    "zsearch": "bin/zai-cli",
     "zai-cli": "bin/zai-cli"
   },
   "files": [
@@ -23,18 +24,19 @@
   "keywords": [
     "zai",
     "z.ai",
+    "zsearch",
     "mcp",
     "vision",
     "search",
     "cli",
-    "agent"
+    "agent",
+    "glm"
   ],
   "license": "MIT",
   "engines": {
     "node": ">=22.0.0"
   },
   "dependencies": {
-    "@brainwav/zai-cli": "^0.1.0",
     "@modelcontextprotocol/sdk": "^1.0.4",
     "chalk": "^5.4.1",
     "commander": "^12.1.0",

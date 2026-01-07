@@ -6,8 +6,8 @@
 import { Command } from 'commander';
 import { spawn } from 'node:child_process';
 import { loadConfig } from '../lib/config.js';
-import { output, getSchemaForCommand } from '../lib/output.js';
-import type { OutputOptions, ErrorCode } from '../types/index.js';
+import { getSchemaForCommand, output } from '../lib/output.js';
+import type { ErrorCode, OutputOptions } from '../types/index.js';
 
 /**
  * Execute a command safely using spawn
@@ -65,9 +65,13 @@ export function code(): Command {
 
       try {
         // Use tsx to run the TypeScript file (safe execution)
+        // Pass through all supported API key variants for GLM coding plan compatibility
         const { stdout, stderr, exitCode } = await execSafe('npx', ['tsx', file], {
           Z_AI_API_KEY: config.apiKey || '',
           Z_AI_MODE: config.mode,
+          // GLM coding plan compatibility
+          GLM_API_KEY: config.apiKey || '',
+          GLM_MODE: config.mode,
         });
 
         if (exitCode !== 0) {
@@ -112,9 +116,13 @@ export function code(): Command {
 
       try {
         // Use tsx to eval the expression (safe execution)
+        // Pass through all supported API key variants for GLM coding plan compatibility
         const { stdout, stderr, exitCode } = await execSafe('npx', ['tsx', '-e', expression], {
           Z_AI_API_KEY: config.apiKey || '',
           Z_AI_MODE: config.mode,
+          // GLM coding plan compatibility
+          GLM_API_KEY: config.apiKey || '',
+          GLM_MODE: config.mode,
         });
 
         if (exitCode !== 0) {

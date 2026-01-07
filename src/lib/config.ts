@@ -5,16 +5,20 @@
 
 import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { homedir } from 'node:os';
-import type { CacheConfig, RetryConfig } from '../types/index.js';
-import type { Config } from '../types/index.js';
+import { join } from 'node:path';
+import type { CacheConfig, Config, RetryConfig } from '../types/index.js';
 
 // Re-export Config type for use in other modules
 export type { Config } from '../types/index.js';
 
 const PACKAGE_VERSION = '0.1.0';
+
+/**
+ * Default API base URL for GLM Coding Plan
+ * Use Z_AI_API_BASE_URL env var to override (e.g., for general API: https://api.z.ai/api/paas/v4)
+ */
+const DEFAULT_API_BASE_URL = 'https://api.z.ai/api/coding/paas/v4';
 
 /**
  * Get XDG config directory with fallback to ~/.config
@@ -119,9 +123,16 @@ async function readConfigFile(path: string): Promise<Record<string, unknown> | n
  */
 export async function loadConfig(): Promise<Config> {
   // Start with defaults
+  // Support multiple API key environment variables with fallback chain:
+  // Z_AI_API_KEY > GLM_API_KEY > ZHIPU_API_KEY (for GLM coding plan compatibility)
+  const apiKey = process.env.Z_AI_API_KEY
+    || process.env.GLM_API_KEY
+    || process.env.ZHIPU_API_KEY;
+
   const config: Config = {
-    apiKey: process.env.Z_AI_API_KEY,
-    mode: process.env.Z_AI_MODE || 'ZAI',
+    apiKey,
+    apiBaseUrl: process.env.Z_AI_API_BASE_URL || DEFAULT_API_BASE_URL,
+    mode: process.env.Z_AI_MODE || process.env.GLM_MODE || 'ZAI',
     timeout: parseTimeout(),
     cache: {
       enabled: isCacheEnabled(),
@@ -181,10 +192,13 @@ export async function loadConfig(): Promise<Config> {
 
 /**
  * Get the API key from environment
+ * Supports fallback chain: Z_AI_API_KEY > GLM_API_KEY > ZHIPU_API_KEY
  * @returns API key string, or undefined if not set
  */
 export function getApiKey(): string | undefined {
-  return process.env.Z_AI_API_KEY;
+  return process.env.Z_AI_API_KEY
+    || process.env.GLM_API_KEY
+    || process.env.ZHIPU_API_KEY;
 }
 
 /**
@@ -196,14 +210,14 @@ export async function validateConfig(config: Config): Promise<{ valid: boolean; 
   if (!config.apiKey) {
     return {
       valid: false,
-      error: 'Z_AI_API_KEY environment variable is required. Set it with: export Z_AI_API_KEY="your-api-key"',
+      error: 'API key is required. Set one of: Z_AI_API_KEY, GLM_API_KEY, or ZHIPU_API_KEY environment variable',
     };
   }
 
   if (config.apiKey.length < 10) {
     return {
       valid: false,
-      error: 'Z_AI_API_KEY appears to be invalid (too short)',
+      error: 'API key appears to be invalid (too short)',
     };
   }
 

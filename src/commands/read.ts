@@ -4,9 +4,9 @@
 
 import { Command } from 'commander';
 import { loadConfig } from '../lib/config.js';
-import { output, getSchemaForCommand } from '../lib/output.js';
-import { callWebReader } from '../lib/mcp-client.js';
-import type { OutputOptions, ErrorCode } from '../types/index.js';
+import { callWebReader } from '../lib/mcp-curl-client.js';
+import { getSchemaForCommand, output } from '../lib/output.js';
+import type { ErrorCode, OutputOptions } from '../types/index.js';
 
 export function read(): Command {
   return new Command('read')
@@ -42,7 +42,7 @@ export function read(): Command {
           withImagesSummary: options.withImagesSummary,
           noGfm: options.noGfm,
           retainImages: options.retainImages,
-        });
+        }, config.apiBaseUrl);
 
         output(result, 'read', getSchemaForCommand('read'), outputOptions);
       } catch (err) {
