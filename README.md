@@ -2,20 +2,22 @@
   <img src="brand/zai-logo.png" alt="Z.AI Logo" width="200"/>
 </p>
 
-# @brainwav/zai-cli
+# @brainwav/zsearch
 
-Z.AI capabilities CLI for agents and automation. Access vision analysis, web search, web reading, GitHub repo exploration, and raw MCP tools.
+Z.AI capabilities CLI and MCP server for agents and automation. Part of the **Search family**: `rSearch` (arXiv), `wSearch` (Wikidata), `zSearch` (Z.AI).
+
+Access vision analysis, web search, web reading, GitHub repo exploration, AI code generation, chat — plus run as a **headless MCP server** for Claude Desktop, Cursor, and other AI apps.
 
 ## Installation
 
 ```bash
-npm install -g @brainwav/zai-cli
+npm install -g @brainwav/zsearch
 ```
 
 Or use directly with npx:
 
 ```bash
-npx @brainwav/zai-cli <command>
+npx @brainwav/zsearch <command>
 ```
 
 ## Prerequisites
@@ -46,73 +48,143 @@ source ~/.bashrc  # or ~/.zshrc
 
 ```bash
 # Search the web
-zai-cli search "zai cli"
+zsearch search "zsearch cli"
 
 # Analyze an image
-zai-cli vision analyze screenshot.png "Describe this image"
+zsearch vision analyze screenshot.png "Describe this image"
 
 # Read a web page
-zai-cli read https://example.com
+zsearch read https://example.com
 
 # Explore a GitHub repo
-zai-cli repo tree facebook/react
+zsearch repo tree facebook/react
+
+# Chat with GLM-4
+zsearch chat "Explain recursion in simple terms"
+
+# Generate code
+zsearch code run script.ts
 
 # Health check
-zai-cli doctor
+zsearch doctor
 ```
 
 ## Commands
 
 ### Vision
 ```bash
-zai-cli vision analyze <image> "<prompt>"    # General image analysis
-zai-cli vision ocr <image>                    # Extract text
-zai-cli vision ui-diff <before.png> <after>   # Compare UIs
-zai-cli vision video <video> "<prompt>"       # Analyze video
+zsearch vision analyze <image> "<prompt>"    # General image analysis
+zsearch vision ocr <image>                    # Extract text
+zsearch vision ui-diff <before.png> <after>   # Compare UIs
+zsearch vision video <video> "<prompt>"       # Analyze video
 ```
 
 ### Search
 ```bash
-zai-cli search "<query>" [--count <n>] [--language <code>] [--time-range <range>]
+zsearch search "<query>" [--count <n>] [--language <code>] [--time-range <range>]
 ```
 
 ### Read
 ```bash
-zai-cli read <url> [--with-images-summary] [--no-gfm] [--retain-images]
+zsearch read <url> [--with-images-summary] [--no-gfm] [--retain-images]
 ```
 
 ### Repo
 ```bash
-zai-cli repo tree <owner/repo> [--path <dir>] [--depth <n>]
-zai-cli repo search <owner/repo> "<query>" [--language <code>]
+zsearch repo tree <owner/repo> [--path <dir>] [--depth <n>]
+zsearch repo search <owner/repo> "<query>" [--language <code>]
 ```
 
 **Note:** These commands connect to the Z.AI MCP server to access GitHub repository exploration capabilities via the ZRead tools.
 
-### MCP Tools
+### Chat & Code Generation
 ```bash
-zai-cli tools [--filter <text>] [--full] [--no-vision]
-zai-cli tool <name> [--no-vision]
-zai-cli call <tool> [--json <data> | --file <path> | --stdin] [--dry-run]
+zsearch chat "<prompt>" [--model glm-4.7|glm-4.5-air] [--max-tokens <n>]
+zsearch model "<prompt>"    # OpenAI-compatible chat completions
 ```
 
 ### Code Mode
 ```bash
-zai-cli code run <file.ts>       # Execute TypeScript chain
-zai-cli code eval "<expression>" # Evaluate expression
-zai-cli code interfaces          # List available interfaces
+zsearch code run <file.ts>       # Execute TypeScript chain
+zsearch code eval "<expression>" # Evaluate expression
+zsearch code interfaces          # List available interfaces
+```
+
+### MCP Tools
+```bash
+zsearch tools [--filter <text>] [--full] [--no-vision]
+zsearch tool <name> [--no-vision]
+zsearch call <tool> [--json <data> | --file <path> | --stdin] [--dry-run]
 ```
 
 ### Setup
 ```bash
-zai-cli setup              # Configure Z.AI for Claude Code
-zai-cli setup --list        # List current configuration
-zai-cli setup --unset      # Remove Z.AI configuration
+zsearch setup              # Configure Z.AI for Claude Code
+zsearch setup --list        # List current configuration
+zsearch setup --unset      # Remove Z.AI configuration
 ```
 
 ### Diagnostics
 ```bash
-zai-cli doctor [--no-vision]
+zsearch doctor [--no-vision]
+```
+
+## MCP Server Mode
+
+Run **zsearch as a headless MCP server** to expose Z.AI capabilities to Claude Desktop, Cursor, and other MCP-compatible applications:
+
+```bash
+zsearch mcp-server
+```
+
+### Available MCP Tools
+
+| Tool | Description |
+|------|-------------|
+| `generate_code` | Generate code using GLM-4.7 or GLM-4.5-air |
+| `chat` | General chat and assistance |
+
+### Configuration for Claude Desktop
+
+Add to your Claude Desktop config (`~/Library/Application Support/Claude/claude_desktop_config.json` on macOS):
+
+```json
+{
+  "mcpServers": {
+    "zsearch": {
+      "command": "zsearch",
+      "args": ["mcp-server"],
+      "env": {
+        "Z_AI_API_KEY": "your-api-key-here"
+      }
+    }
+  }
+}
+```
+
+### Configuration via CLI
+
+```bash
+claude mcp add -s user zsearch --env Z_AI_API_KEY="$Z_AI_API_KEY" -- zsearch mcp-server
+```
+
+### Verify MCP Server
+
+```bash
+# Check server status
+claude mcp list
+
+# Test directly
+echo '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' | zsearch mcp-server
+```
+
+## Backward Compatibility
+
+The `zai-cli` command still works as an alias:
+
+```bash
+zai-cli search "query"  # Still works
+zsearch search "query"  # New primary command
 ```
 
 ## Agent & Tool Integration
@@ -120,28 +192,31 @@ zai-cli doctor [--no-vision]
 ### For Claude Code, Codex, and Other Agents
 
 **Direct CLI Invocation:**
-Agents can invoke `zai-cli` commands directly via their shell/bash tools:
+Agents can invoke `zsearch` commands directly via their shell/bash tools:
 
 ```bash
 # Web search
-zai-cli search "query" --json
+zsearch search "query" --json
 
 # Web page reading
-zai-cli read "https://example.com" --json
+zsearch read "https://example.com" --json
 
 # Vision analysis
-zai-cli vision analyze image.png "Describe this" --json
+zsearch vision analyze image.png "Describe this" --json
 
 # GitHub repo exploration
-zai-cli repo tree owner/repo --json
+zsearch repo tree owner/repo --json
+
+# AI chat
+zsearch chat "Explain this code" --json
 ```
 
 **JSON Output Mode:**
 Use `--json` for machine-readable output with stable schema:
 ```json
 {
-  "schema": "zai-cli.search.v1",
-  "meta": { "tool": "zai-cli", "version": "0.1.0" },
+  "schema": "zsearch.search.v1",
+  "meta": { "tool": "zsearch", "version": "0.1.0" },
   "status": "success",
   "data": [...]
 }
@@ -157,14 +232,15 @@ Configure Claude Code to use Z.AI models instead of Anthropic:
 export Z_AI_API_KEY="your-api-key"
 
 # Configure Claude Code
-zai-cli setup
+zsearch setup
 ```
 
 This updates `~/.claude/settings.json` to redirect all Claude Code requests to Z.AI's Anthropic-compatible API endpoint. After restarting Claude Code, it will automatically use GLM-4.7 and GLM-4.5-air models.
 
 **Two modes work together:**
 1. **Model Replacement**: All Claude Code API calls use Z.AI models (GLM-4.7, GLM-4.5-air)
-2. **Additional Tools**: Claude Code can still invoke `zai-cli` directly for specialized capabilities like web search, vision analysis, etc.
+2. **MCP Server**: Claude Desktop can connect to `zsearch mcp-server` for additional tools
+3. **CLI Access**: Claude Code can invoke `zsearch` directly for specialized capabilities
 
 **To verify:**
 1. Restart Claude Code (run `claude` again)
@@ -172,7 +248,7 @@ This updates `~/.claude/settings.json` to redirect all Claude Code requests to Z
 
 **To remove:**
 ```bash
-zai-cli setup --unset
+zsearch setup --unset
 ```
 
 ### For Codex specifically
@@ -197,19 +273,19 @@ echo 'Z_AI_API_KEY="your-api-key"' > ~/codex/.env
 - Codex executes commands in an isolated environment (`~/codex`)
 - The `.env` file provides the API key value
 - The `config.toml` allowlist explicitly permits `Z_AI_API_KEY` to be passed to subprocesses
-- Without both, `zai-cli` will fail with "Z_AI_API_KEY is required"
+- Without both, `zsearch` will fail with "Z_AI_API_KEY is required"
 
 **To verify:**
 ```bash
 # Check that the .env file exists and contains the key
 cat ~/codex/.env
 
-# Test that Codex can access zai-cli
-cd ~/codex && zai-cli doctor
+# Test that Codex can access zsearch
+cd ~/codex && zsearch doctor
 ```
 
 **Usage:**
-Once configured, Codex can invoke all `zai-cli` commands using the examples from the "Direct CLI Invocation" section above.
+Once configured, Codex can invoke all `zsearch` commands using the examples from the "Direct CLI Invocation" section above.
 
 ## Environment Variables
 
@@ -220,7 +296,7 @@ Once configured, Codex can invoke all `zai-cli` commands using the examples from
 | `Z_AI_TIMEOUT` | No | `30000` | Request timeout (ms) |
 | `ZAI_MCP_TOOL_CACHE` | No | `1` | Enable tool discovery cache |
 | `ZAI_MCP_TOOL_CACHE_TTL_MS` | No | `86400000` | Cache TTL (ms) |
-| `ZAI_MCP_CACHE_DIR` | No | `~/.cache/zai-cli` | Cache directory |
+| `ZAI_MCP_CACHE_DIR` | No | `~/.cache/zsearch` | Cache directory |
 | `NO_COLOR` | No | - | Disable color output |
 
 ## Output Modes
@@ -229,7 +305,7 @@ Once configured, Codex can invoke all `zai-cli` commands using the examples from
 Token-efficient output for agent use:
 
 ```bash
-$ zai-cli search "zai cli"
+$ zsearch search "zsearch cli"
 [{"title": "...", "url": "...", "snippet": "..."}, ...]
 ```
 
@@ -237,11 +313,11 @@ $ zai-cli search "zai cli"
 Stable schema with metadata:
 
 ```bash
-$ zai-cli search "zai cli" --json
+$ zsearch search "zsearch cli" --json
 {
-  "schema": "zai-cli.search.v1",
+  "schema": "zsearch.search.v1",
   "meta": {
-    "tool": "zai-cli",
+    "tool": "zsearch",
     "version": "0.1.0",
     "timestamp": "2025-01-05T...",
     "command": "search"
@@ -251,6 +327,14 @@ $ zai-cli search "zai cli" --json
   "errors": []
 }
 ```
+
+## The Search Family
+
+| Tool | Command | Source | Purpose |
+|------|---------|--------|---------|
+| **rSearch** | `rsearch` | arXiv | Academic papers |
+| **wSearch** | `wsearch` | Wikidata | Knowledge base |
+| **zSearch** | `zsearch` | Z.AI | AI generation & search |
 
 ## Troubleshooting
 
@@ -286,7 +370,7 @@ Verify with: `node --version` (should show v22.x.x or higher)
 2. Verify Z.AI service status
 3. Increase timeout:
 ```bash
-zai-cli --timeout 60000 vision analyze image.png "prompt"
+zsearch --timeout 60000 vision analyze image.png "prompt"
 ```
 Or set via environment:
 ```bash
@@ -303,6 +387,17 @@ echo $Z_AI_API_KEY  # Should show your key, not empty
 ```
 2. Regenerate your API key from the Z.AI dashboard
 3. Ensure the key has necessary permissions
+
+### MCP server not connecting
+**Symptom:** Claude Desktop can't connect to the MCP server.
+
+**Solutions:**
+1. Verify the server starts:
+```bash
+echo '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' | zsearch mcp-server
+```
+2. Check Claude Desktop config for correct path and API key
+3. Ensure Z_AI_API_KEY is set in the MCP server's environment
 
 ### Permission denied during global install
 **Symptom:** `npm install -g` fails with permission error.
@@ -322,7 +417,7 @@ source ~/.bashrc  # or ~/.zshrc
 
 **Solution:** Clear the cache:
 ```bash
-rm -rf ~/.cache/zai-cli
+rm -rf ~/.cache/zsearch
 # Or if using custom cache dir:
 rm -rf "$ZAI_MCP_CACHE_DIR"
 ```
@@ -339,6 +434,12 @@ rm -rf "$ZAI_MCP_CACHE_DIR"
 | 5 | Network failure |
 | 6 | Authentication failure |
 | 130 | User abort (Ctrl-C) |
+
+## Security
+
+For security policies, vulnerability reporting, and known issues, see [SECURITY.md](SECURITY.md).
+
+**Known Vulnerability:** There is a known ReDoS vulnerability in the `@modelcontextprotocol/sdk` dependency (GHSA-8r9q-7v3j-jr4g). This has **low risk** for typical usage since the MCP server runs locally and only connects to trusted clients. See [SECURITY.md](SECURITY.md) for details.
 
 ## Contributing
 
