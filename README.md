@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="brand/zai-logo.png" alt="Z.AI Logo" width="200"/>
+  <img src="brand/zSearch-logo.png" alt="Z.AI Logo" width="200"/>
 </p>
 
 # @brainwav/zsearch
